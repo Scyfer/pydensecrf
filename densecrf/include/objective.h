@@ -28,7 +28,8 @@
 #include <Eigen/Core>
 using namespace Eigen;
 
-typedef Matrix<short,Dynamic,1> VectorXs;
+//typedef Matrix<short,Dynamic,1> VectorXs;
+typedef VectorXi VectorXs;
 
 /**** Learning Objective ****/
 class ObjectiveFunction {

@@ -46,6 +46,49 @@ cdef class VectorXf:
         pass
 
 
+# [::1] means we want a C-contiguous array.
+cdef c_VectorXs c_vectorXs(int[::1] arr):
+    return c_buf2vecs(&arr[0], arr.shape[0])
+
+
+def vectorXs(int[::1] arr not None):
+    return VectorXs().wrap(c_vectorXs(arr))
+
+
+cdef class VectorXs:
+
+    def __cinit__(self):
+        # Can't directly initialize v on construction because arguments
+        # passed to `__cinit__` need to be Python objects. Refs:
+        # - https://mail.python.org/pipermail/cython-devel/2012-June/002734.html
+        # - https://kaushikghose.wordpress.com/2015/03/08/cython-__cinit__/
+        self.shape = (0,)
+        self.strides = (0,)
+
+    cdef VectorXs wrap(self, c_VectorXs v):
+        self.v = v
+        self.shape[0] = v.size()
+        self.strides[0] = sizeof(int)
+        return self
+
+    # http://docs.cython.org/src/userguide/buffer.html
+    def __getbuffer__(self, Py_buffer *buf, int flags):
+        buf.buf = <char *>self.v.data()
+        buf.format = 'i'
+        buf.internal = NULL
+        buf.itemsize = sizeof(int)
+        buf.len = self.shape[0] * buf.itemsize
+        buf.ndim = 1
+        buf.obj = self
+        buf.readonly = 0
+        buf.shape = self.shape
+        buf.strides = self.strides
+        buf.suboffsets = NULL
+
+    def __releasebuffer__(self, Py_buffer *buf):
+        pass
+
+
 # [:,::1] means we want a C-contiguous array.
 cdef c_MatrixXf c_matrixXf(float[:,::1] arr):
     return c_buf2matf(&arr[0,0], arr.shape[0], arr.shape[1])

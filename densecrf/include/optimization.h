@@ -26,13 +26,33 @@
 */
 #pragma once
 #include <Eigen/Core>
+#include "densecrf.h"
+#include "objective.h"
 using namespace Eigen;
 
 class EnergyFunction {
 public:
+    virtual ~EnergyFunction();
 	virtual VectorXf initialValue() = 0;
 	virtual double gradient( const VectorXf & x, VectorXf & dx ) = 0;
 };
+
+class CRFEnergy: public EnergyFunction {
+protected:
+	VectorXf initial_u_param_, initial_lbl_param_, initial_knl_param_;
+	DenseCRF & crf_;
+	const ObjectiveFunction & objective_;
+	int NIT_;
+	bool unary_, pairwise_, kernel_;
+	float l2_norm_;
+public:
+	CRFEnergy( DenseCRF & crf, const ObjectiveFunction & objective, int NIT,
+	bool unary=1, bool pairwise=1, bool kernel=1 );
+	void setL2Norm( float norm );
+	virtual VectorXf initialValue();
+	virtual double gradient( const VectorXf & x, VectorXf & dx );
+};
+
 VectorXf minimizeLBFGS( EnergyFunction & efun, int restart=0, bool verbose=false );
 VectorXf numericGradient( EnergyFunction & efun, const VectorXf & x, float EPS=1e-3 );
 VectorXf gradient( EnergyFunction & efun, const VectorXf & x );

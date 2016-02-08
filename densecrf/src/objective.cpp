@@ -32,7 +32,8 @@
 /**** Learning Objectives ****/
 ObjectiveFunction::~ObjectiveFunction(){
 }
-LogLikelihood::LogLikelihood( const VectorXs & gt, float robust ):gt_( gt ),robust_(robust){
+LogLikelihood::LogLikelihood( const VectorXs & gt, float robust ):gt_( gt ),
+robust_(robust){
 }
 double LogLikelihood::evaluate( MatrixXf & d_mul_Q, const MatrixXf & Q ) const {
 	assert( gt_.rows() == Q.cols() );
@@ -61,7 +62,8 @@ Hamming::Hamming( const VectorXs & gt, float class_weight_pow ):gt_( gt ){
 	class_weight_ = class_weight_.array().pow( -class_weight_pow );
 	class_weight_ = class_weight_.array() / (cnt.array()*class_weight_.array()).sum();
 }
-Hamming::Hamming( const VectorXs & gt, const VectorXf & w ):gt_( gt ),class_weight_(w){
+Hamming::Hamming( const VectorXs & gt, const VectorXf & w ):gt_( gt ),
+class_weight_(w){
 }
 double Hamming::evaluate( MatrixXf & d_mul_Q, const MatrixXf & Q ) const {
 	assert( gt_.rows() == Q.cols() );

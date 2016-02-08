@@ -15,6 +15,20 @@ static void vecf2buf(const Eigen::VectorXf& vec, float *mem)
     Eigen::Map<NumpyVecF>(mem, vec.size()) = vec;
 }
 
+
+typedef Eigen::Matrix<int, Eigen::Dynamic, 1> NumpyVecS;
+
+static Eigen::VectorXi buf2vecs(int *mem, Py_ssize_t n)
+{
+    return Eigen::Map<NumpyVecS>(mem, n);
+}
+
+static void vecs2buf(const Eigen::VectorXi& vec, int *mem)
+{
+    Eigen::Map<NumpyVecS>(mem, vec.size()) = vec;
+}
+
+
 // In Python, the default is row-major (C) while in Eigen it's ColMajor (F).
 typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> NumpyMatF;
 

@@ -8,10 +8,17 @@ cdef extern from "Eigen/Dense":
         float* data()
         Py_ssize_t size()
 
+    cdef cppclass c_VectorXs "Eigen::VectorXi":
+        float* data()
+        Py_ssize_t size()
 
 cdef extern from "eigen_impl.cpp":
     c_VectorXf c_buf2vecf "buf2vecf" (float *mem, Py_ssize_t n)
     void c_vecf2buf "vecf2buf" (const c_VectorXf &mat, float *buf)
+
+    c_VectorXs c_buf2vecs "buf2vecs" (int *mem, Py_ssize_t n)
+    void c_vecs2buf "vecs2buf" (const c_VectorXs &mat, int *buf)
+
     c_MatrixXf c_buf2matf "buf2matf" (float *mem, Py_ssize_t h, Py_ssize_t w)
     void c_matf2buf "matf2buf" (const c_MatrixXf &mat, float *buf)
 
@@ -23,7 +30,18 @@ cdef class VectorXf:
 
     cdef VectorXf wrap(self, c_VectorXf v)
 
+
 cdef c_VectorXf c_vectorXf(float[::1] arr)
+
+
+cdef class VectorXs:
+    cdef c_VectorXs v
+    cdef Py_ssize_t  shape[1]
+    cdef Py_ssize_t strides[1]
+
+    cdef VectorXs wrap(self, c_VectorXs v)
+
+cdef c_VectorXs c_vectorXs(int[::1] arr)
 
 
 cdef class MatrixXf:
