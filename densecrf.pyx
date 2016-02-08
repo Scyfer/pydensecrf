@@ -45,7 +45,22 @@ cdef class LogisticUnary(Unary):
                                                eigen.c_matrixXf(f))
 
 
-cdef class LogLikelihoodObjective:
+cdef class Objective:
+    # Because all of the APIs that take an object of this type will
+    # take ownership. Thus, we need to make sure not to delete this
+    # upon destruction.
+    cdef ObjectiveFunction* move(self):
+        ptr = self.thisptr
+        self.thisptr = NULL
+        return ptr
+
+    # It might already be deleted by the library, actually.
+    # Yeah, pretty sure it is.
+    def __dealloc__(self):
+        del self.thisptr
+
+
+cdef class LogLikObjective(Objective):
     def __cinit__(self, int[::1] gt not None, float robust=0):
         self.thisptr = new LogLikelihood(eigen.c_vectorXs(gt), robust)
 
@@ -53,46 +68,41 @@ cdef class LogLikelihoodObjective:
         del self.thisptr
 
 
-# cdef class HammingObjective:
-#     def __cinit__(self, int[::1] gt not None, float class_weight_pow=0):
-#         self.thisptr = new Hamming(eigen.c_vectorXs(gt), class_weight_pow)
-
+cdef class HammingObjective(Objective):
+    def __cinit__(self, int[::1] gt not None, float class_weight_pow=0):
+        self.thisptr = new Hamming(eigen.c_vectorXs(gt), class_weight_pow)
+    #
     # def __cinit__(self, int[::1] gt not None, float[::1] class_weight_pow not None):
     #     self.thisptr = new Hamming(eigen.c_vectorXs(gt),
     #                                eigen.c_vectorXf(class_weight_pow))
 
-    # def __dealloc__(self):
-    #     del self.thisptr
+    def __dealloc__(self):
+        del self.thisptr
 
 
-# cdef class IntersectionOverUnionObjective:
-#     def __cinit__(self, int[::1] gt not None):
-#         self.thisptr = new IntersectionOverUnion(eigen.c_vectorXs(gt))
-#
-#     def __dealloc__(self):
-#         del self.thisptr
+cdef class IoUObjective(Objective):
+    def __cinit__(self, int[::1] gt not None):
+        self.thisptr = new IntersectionOverUnion(eigen.c_vectorXs(gt))
+
+    def __dealloc__(self):
+        del self.thisptr
 
 
 cdef class CRFEnergy:
-    def __cinit__(self, DenseCRF dc, str objective_name, int niter,
-                  int[::1] labels, bint pairwise=True, bint kernel=True,
-                  class_weight=0, float robust=0):
+    def __cinit__(self, DenseCRF dc, int niter, int[::1] labels,
+                  str objective_name='Likelihood', bint pairwise=True,
+                  bint kernel=True, class_weight=0, float robust=0):
         if objective_name == 'Likelihood':
-            objective = LogLikelihoodObjective(labels, robust)
+            objective = LogLikObjective(labels, robust)
         elif objective_name == 'Hamming':
             assert isinstance(class_weight, (float[::1], float)), \
                 'class_weight has to be either numpy array or float'
-        #     if isinstance(class_weight, float[::1]):
-        #         objective = HammingObjective(labels, class_weight)
-        #     elif isinstance(class_weight, float):
-        #         objective = HammingObjective(eigen.c_vectorXs(labels), class_weight)
-        #     objective = HammingObjective(labels, class_weight)
-        # elif objective_name == 'IoU':
-        #     objective = IntersectionOverUnionObjective(labels)
+            objective = HammingObjective(labels, class_weight)
+        elif objective_name == 'IoU':
+            objective = IoUObjective(labels)
         else:
             raise ValueError, 'Unknown objective function.'
 
-        print type(objective)
         if type(self) is CRFEnergy:
             self.thisptr = new c_CRFEnergy(dc._this[0], objective.thisptr[0],
                                            niter, 0, int(pairwise), int(kernel))
