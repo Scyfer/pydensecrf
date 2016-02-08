@@ -29,7 +29,7 @@
 #include <algorithm>
 #include <cstdio>
 
-EnergyFunction: ~EnergyFunction() {};
+EnergyFunction::~EnergyFunction(){}
 
 // The energy object implements an energy function that is minimized using LBFGS
 class CRFEnergy: public EnergyFunction {
@@ -82,7 +82,7 @@ public:
 
 		return r;
 	}
-};
+}
 
 
 static lbfgsfloatval_t evaluate(

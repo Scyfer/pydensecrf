@@ -1,9 +1,5 @@
 # distutils: language = c++
-# distutils: sources = densecrf/src/densecrf.cpp densecrf/src/unary.cpp
-# densecrf/src/pairwise.cpp densecrf/src/permutohedral.cpp
-# densecrf/src/optimization.cpp densecrf/src/objective.cpp
-# densecrf/src/labelcompatibility.cpp densecrf/src/util.cpp
-# densecrf/external/liblbfgs/lib/lbfgs.c
+# distutils: sources = densecrf/src/densecrf.cpp densecrf/src/unary.cpp densecrf/src/pairwise.cpp densecrf/src/permutohedral.cpp densecrf/src/optimization.cpp densecrf/src/objective.cpp densecrf/src/labelcompatibility.cpp densecrf/src/util.cpp densecrf/external/liblbfgs/lib/lbfgs.c
 # distutils: include_dirs = densecrf/include densecrf/external/liblbfgs/include
 
 from numbers import Number
@@ -57,16 +53,16 @@ cdef class LogLikelihoodObjective:
         del self.thisptr
 
 
-cdef class HammingObjective:
-    def __cinit__(self, int[::1] gt not None, float class_weight_pow=0):
-        self.thisptr = new Hamming(eigen.c_vectorXs(gt), class_weight_pow)
+# cdef class HammingObjective:
+#     def __cinit__(self, int[::1] gt not None, float class_weight_pow=0):
+#         self.thisptr = new Hamming(eigen.c_vectorXs(gt), class_weight_pow)
 
     # def __cinit__(self, int[::1] gt not None, float[::1] class_weight_pow not None):
     #     self.thisptr = new Hamming(eigen.c_vectorXs(gt),
     #                                eigen.c_vectorXf(class_weight_pow))
 
-    def __dealloc__(self):
-        del self.thisptr
+    # def __dealloc__(self):
+    #     del self.thisptr
 
 
 # cdef class IntersectionOverUnionObjective:
@@ -86,11 +82,11 @@ cdef class CRFEnergy:
         elif objective_name == 'Hamming':
             assert isinstance(class_weight, (float[::1], float)), \
                 'class_weight has to be either numpy array or float'
-            # if isinstance(class_weight, float[::1]):
-            #     objective = HammingObjective(labels, class_weight)
-            # elif isinstance(class_weight, float):
-            #     objective = HammingObjective(eigen.c_vectorXs(labels), class_weight)
-            # objective = HammingObjective(labels, class_weight)
+        #     if isinstance(class_weight, float[::1]):
+        #         objective = HammingObjective(labels, class_weight)
+        #     elif isinstance(class_weight, float):
+        #         objective = HammingObjective(eigen.c_vectorXs(labels), class_weight)
+        #     objective = HammingObjective(labels, class_weight)
         # elif objective_name == 'IoU':
         #     objective = IntersectionOverUnionObjective(labels)
         else:

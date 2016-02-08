@@ -27,7 +27,7 @@
 #pragma once
 #include <Eigen/Core>
 #include "densecrf.h"
-#include "objective.h"
+//#include "objective.h"
 using namespace Eigen;
 
 class EnergyFunction {
