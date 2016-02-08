@@ -89,19 +89,20 @@ cdef class IoUObjective(Objective):
 
 
 cdef class CRFEnergy:
-    def __cinit__(self, DenseCRF dc, int niter, int[::1] labels,
+    def __cinit__(self, DenseCRF dc, Objective objective, int niter,
+                  # int[::1] labels,
                   str objective_name='Likelihood', bint pairwise=True,
                   bint kernel=True, class_weight=0, float robust=0):
-        if objective_name == 'Likelihood':
-            objective = LogLikObjective(labels, robust)
-        elif objective_name == 'Hamming':
-            assert isinstance(class_weight, (float[::1], float)), \
-                'class_weight has to be either numpy array or float'
-            objective = HammingObjective(labels, class_weight)
-        elif objective_name == 'IoU':
-            objective = IoUObjective(labels)
-        else:
-            raise ValueError, 'Unknown objective function.'
+        # if objective_name == 'Likelihood':
+        #     objective = LogLikObjective(labels, robust)
+        # elif objective_name == 'Hamming':
+        #     assert isinstance(class_weight, (float[::1], float)), \
+        #         'class_weight has to be either numpy array or float'
+        #     objective = HammingObjective(labels, class_weight)
+        # elif objective_name == 'IoU':
+        #     objective = IoUObjective(labels)
+        # else:
+        #     raise ValueError, 'Unknown objective function.'
 
         if type(self) is CRFEnergy:
             self.thisptr = new c_CRFEnergy(dc._this[0], objective.thisptr[0],
