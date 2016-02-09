@@ -48,7 +48,7 @@ cdef extern from "densecrf/include/pairwise.h":
 
 cdef extern from "densecrf/include/objective.h":
     cdef cppclass ObjectiveFunction:
-        pass
+        double evaluate( c_MatrixXf & d_mul_Q, const c_MatrixXf & Q ) const
 
     cdef cppclass LogLikelihood(ObjectiveFunction):
         LogLikelihood(const c_VectorXs & gt, float robust ) except +
@@ -68,6 +68,7 @@ cdef extern from "densecrf/include/objective.h":
 cdef class Objective:
     cdef ObjectiveFunction *thisptr
     cdef ObjectiveFunction* move(self)
+    #cdef void* evaluate(self, float[:, ::1] Q )
 
 cdef class LogLikObjective(Objective):
     pass
@@ -85,11 +86,13 @@ cdef extern from "densecrf/include/optimization.h":
     cdef cppclass c_EnergyFunction "EnergyFunction":
         pass
     cdef cppclass c_CRFEnergy "CRFEnergy" (c_EnergyFunction):
-        c_CRFEnergy( c_DenseCRF & crf, const ObjectiveFunction & objective,
+        c_CRFEnergy( c_DenseCRF &crf, const ObjectiveFunction &objective,
                      int NIT, bint unary, bint pairwise, bint kernel) except +
-        # void setL2Norm( float norm )
-        # double gradient( const c_VectorXf &x, c_VectorXf &dx )
+
         c_VectorXf sgd_gradient( const c_VectorXf &x )
+        void setL2Norm( float norm )
+        c_VectorXf initialValue()
+        double gradient( const c_VectorXf &x, c_VectorXf &dx )
 
 
 cdef class CRFEnergy:
@@ -99,7 +102,7 @@ cdef class CRFEnergy:
 
 
 cdef extern from "densecrf/include/optimization.h":
-    c_VectorXf minimizeLBFGS( c_EnergyFunction & efun, int restart, bint verbose)
+    c_VectorXf minimizeLBFGS( c_EnergyFunction &efun, int restart, bint verbose)
 
 
 cdef extern from "densecrf/include/densecrf.h":

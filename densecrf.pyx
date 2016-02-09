@@ -93,20 +93,26 @@ cdef class CRFEnergy:
         if self.thisptr:
             del self.thisptr
 
-    # cdef CRFEnergy wrap(self, c_CRFEnergy crfe):
-    #     self.thisobj = crfe
-    #     return self
-
     def compute_gradient(self, float[::1] params):
         return eigen.VectorXf().wrap(self.thisptr.sgd_gradient(
             eigen.c_vectorXf(params)))
 
-    # def setL2Norm(self, float norm):
-    #     self.thisptr.setL2Norm(norm)
+    def __dealloc__(self):
+        if self.thisptr:
+            del self.thisptr
 
-    # def learn_parameters(self, int restart=0, int verbose=1):
-    #     p = minimizeLBFGS( self.thisptr[0], restart, verbose )
-    #     return eigen.VectorXf().wrap(p)
+    def setL2Norm(self, float norm):
+        self.thisptr.setL2Norm(norm)
+
+    def initialValue(self):
+        return eigen.VectorXf().wrap(self.thisptr.initialValue())
+
+    def gradient(self, VectorXf x, VectorXf dx):
+        return self.thisptr.gradient(x.v, dx.v)
+
+    def learn_parameters(self, int restart=0, int verbose=1):
+        p = minimizeLBFGS( self.thisptr[0], restart, verbose )
+        return eigen.VectorXf().wrap(p)
 
 
 cdef class DenseCRF:
