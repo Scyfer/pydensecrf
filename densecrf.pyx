@@ -54,8 +54,8 @@ cdef class Objective:
         self.thisptr = NULL
         return ptr
 
-    def evaluate(self, float[:, ::1] Q ):
-        self.thisptr.evaluate(NULL, eigen.c_matrixXf(Q))
+    # def evaluate(self, float[:, ::1] Q ):
+    #     self.thisptr.evaluate(NULL, eigen.c_matrixXf(Q))
 
     # It might already be deleted by the library, actually.
     # Yeah, pretty sure it is.
@@ -92,16 +92,21 @@ cdef class CRFEnergy:
     def __dealloc__(self):
         if self.thisptr:
             del self.thisptr
-            
-    def setL2Norm(self, float norm):
-        self.thisptr.setL2Norm(norm)
 
-    def compute_gradient(self):
-        pass
+    # cdef CRFEnergy wrap(self, c_CRFEnergy crfe):
+    #     self.thisobj = crfe
+    #     return self
 
-    def learn_parameters(self, int restart=0, int verbose=1):
-        p = minimizeLBFGS( self.thisptr[0], restart, verbose )
-        return eigen.VectorXf().wrap(p)
+    def compute_gradient(self, float[::1] params):
+        return eigen.VectorXf().wrap(self.thisptr.sgd_gradient(
+            eigen.c_vectorXf(params)))
+
+    # def setL2Norm(self, float norm):
+    #     self.thisptr.setL2Norm(norm)
+
+    # def learn_parameters(self, int restart=0, int verbose=1):
+    #     p = minimizeLBFGS( self.thisptr[0], restart, verbose )
+    #     return eigen.VectorXf().wrap(p)
 
 
 cdef class DenseCRF:

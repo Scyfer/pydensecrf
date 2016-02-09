@@ -87,12 +87,15 @@ cdef extern from "densecrf/include/optimization.h":
     cdef cppclass c_CRFEnergy "CRFEnergy" (c_EnergyFunction):
         c_CRFEnergy( c_DenseCRF & crf, const ObjectiveFunction & objective,
                      int NIT, bint unary, bint pairwise, bint kernel) except +
-        void setL2Norm( float norm )
-        double gradient( const c_VectorXf &x, c_VectorXf &dx )
+        # void setL2Norm( float norm )
+        # double gradient( const c_VectorXf &x, c_VectorXf &dx )
+        c_VectorXf sgd_gradient( const c_VectorXf &x )
 
 
 cdef class CRFEnergy:
     cdef c_CRFEnergy *thisptr
+    # cdef c_CRFEnergy thisobj
+    # cdef CRFEnergy wrap(self, c_CRFEnergy crfe)
 
 
 cdef extern from "densecrf/include/optimization.h":

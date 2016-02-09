@@ -48,6 +48,28 @@ VectorXf CRFEnergy::initialValue() {
     p << (unary_?initial_u_param_:VectorXf()), (pairwise_?initial_lbl_param_:VectorXf()), (kernel_?initial_knl_param_:VectorXf());
     return p;
 }
+VectorXf CRFEnergy::sgd_gradient( const VectorXf & x) {
+    int p = 0;
+    VectorXf dx;
+    if (unary_) {
+        crf_.setUnaryParameters( x.segment( p, initial_u_param_.rows() ) );
+        p += initial_u_param_.rows();
+    }
+    if (pairwise_) {
+        crf_.setLabelCompatibilityParameters( x.segment( p, initial_lbl_param_.rows() ) );
+        p += initial_lbl_param_.rows();
+    }
+    if (kernel_)
+        crf_.setKernelParameters( x.segment( p, initial_knl_param_.rows() ) );
+
+    VectorXf du = 0*initial_u_param_, dl = 0*initial_u_param_, dk = 0*initial_knl_param_;
+    double r = crf_.gradient( NIT_, objective_, unary_?&du:NULL, pairwise_?&dl:NULL, kernel_?&dk:NULL );
+    r = -r;
+    dx.resize( pairwise_*dl.rows() + kernel_*dk.rows() + 1 );
+    dx << r, -(dl), -(dk);
+    return dx;
+}
+
 double CRFEnergy::gradient( const VectorXf & x, VectorXf & dx ) {
     int p = 0;
     if (unary_) {

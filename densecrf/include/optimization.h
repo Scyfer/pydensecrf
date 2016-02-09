@@ -51,6 +51,7 @@ public:
 	void setL2Norm( float norm );
 	virtual VectorXf initialValue();
 	virtual double gradient( const VectorXf & x, VectorXf & dx );
+	virtual VectorXf sgd_gradient( const VectorXf & x );
 };
 
 VectorXf minimizeLBFGS( EnergyFunction & efun, int restart=0, bool verbose=false );
