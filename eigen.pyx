@@ -30,6 +30,7 @@ cdef class VectorXf:
 
     # http://docs.cython.org/src/userguide/buffer.html
     def __getbuffer__(self, Py_buffer *buf, int flags):
+        self.shape = (self.v.size(),) # update the shape!
         buf.buf = <char *>self.v.data()
         buf.format = 'f'
         buf.internal = NULL
@@ -73,6 +74,7 @@ cdef class VectorXs:
 
     # http://docs.cython.org/src/userguide/buffer.html
     def __getbuffer__(self, Py_buffer *buf, int flags):
+        self.shape = (self.v.size(),) # update the shape!
         buf.buf = <char *>self.v.data()
         buf.format = 'i'
         buf.internal = NULL
@@ -125,6 +127,7 @@ cdef class MatrixXf:
 
     # http://docs.cython.org/src/userguide/buffer.html
     def __getbuffer__(self, Py_buffer *buf, int flags):
+        self.shape = (self.m.rows(), self.m.cols())# update the shape!
         buf.buf = <char *>self.m.data()
         buf.format = 'f'
         buf.internal = NULL
