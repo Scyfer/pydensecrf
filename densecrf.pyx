@@ -54,6 +54,9 @@ cdef class Objective:
         self.thisptr = NULL
         return ptr
 
+    def evaluate(self, float[:, ::1] Q ):
+        self.thisptr.evaluate(NULL, eigen.c_matrixXf(Q))
+
     # It might already be deleted by the library, actually.
     # Yeah, pretty sure it is.
     def __dealloc__(self):
@@ -64,45 +67,20 @@ cdef class LogLikObjective(Objective):
     def __cinit__(self, int[::1] gt not None, float robust=0):
         self.thisptr = new LogLikelihood(eigen.c_vectorXs(gt), robust)
 
-    def __dealloc__(self):
-        del self.thisptr
-
 
 cdef class HammingObjective(Objective):
     def __cinit__(self, int[::1] gt not None, float class_weight_pow=0):
         self.thisptr = new Hamming(eigen.c_vectorXs(gt), class_weight_pow)
-    #
-    # def __cinit__(self, int[::1] gt not None, float[::1] class_weight_pow not None):
-    #     self.thisptr = new Hamming(eigen.c_vectorXs(gt),
-    #                                eigen.c_vectorXf(class_weight_pow))
-
-    def __dealloc__(self):
-        del self.thisptr
 
 
 cdef class IoUObjective(Objective):
     def __cinit__(self, int[::1] gt not None):
         self.thisptr = new IntersectionOverUnion(eigen.c_vectorXs(gt))
 
-    def __dealloc__(self):
-        del self.thisptr
-
 
 cdef class CRFEnergy:
     def __cinit__(self, DenseCRF dc, Objective objective, int niter,
-                  # int[::1] labels,
-                  str objective_name='Likelihood', bint pairwise=True,
-                  bint kernel=True, class_weight=0, float robust=0):
-        # if objective_name == 'Likelihood':
-        #     objective = LogLikObjective(labels, robust)
-        # elif objective_name == 'Hamming':
-        #     assert isinstance(class_weight, (float[::1], float)), \
-        #         'class_weight has to be either numpy array or float'
-        #     objective = HammingObjective(labels, class_weight)
-        # elif objective_name == 'IoU':
-        #     objective = IoUObjective(labels)
-        # else:
-        #     raise ValueError, 'Unknown objective function.'
+                  bint pairwise=True, bint kernel=True):
 
         if type(self) is CRFEnergy:
             self.thisptr = new c_CRFEnergy(dc._this[0], objective.thisptr[0],
@@ -117,12 +95,12 @@ cdef class CRFEnergy:
             
     def setL2Norm(self, float norm):
         self.thisptr.setL2Norm(norm)
-        
-    # def gradient(self, float[::1] x, VectorXf dx):
-    # def gradient(self, VectorXf x, VectorXf dx):
-    #     self.thisptr.gradient(x.v, dx.v)
-    def learn_parameters(self):
-        p = minimizeLBFGS( self.thisptr[0], 2, 0 )
+
+    def compute_gradient(self):
+        pass
+
+    def learn_parameters(self, int restart=0, int verbose=1):
+        p = minimizeLBFGS( self.thisptr[0], restart, verbose )
         return eigen.VectorXf().wrap(p)
 
 
@@ -175,63 +153,25 @@ cdef class DenseCRF:
     def map(self, int niter):
         return eigen.VectorXs().wrap(self._this.map(niter))
 
-    # def compute_gradient(self, int niter, int[::1] labels, float[::1] x,
-    #                      float[::1] dx, str objective_name='Likelihood',
-    #                      class_weight=0, float robust=0):
-    #     if objective_name == 'Likelihood':
-    #         objective = LogLikelihoodObjective(labels, robust)
-    #     elif objective_name == 'Hamming':
-    #         assert isinstance(class_weight, (float[::1], float)), \
-    #             'class_weight has to be either numpy array or float'
-    #         # if isinstance(class_weight, float[::1]):
-    #         #     objective = Hamming(labels, class_weight)
-    #         # elif isinstance(class_weight, float):
-    #         #     objective = Hamming(eigen.c_vectorXs(labels), class_weight)
-    #     #     objective = HammingObjective(labels, class_weight)
-    #     elif objective_name == 'IoU':
-    #         objective = IntersectionOverUnionObjective(labels)
-    #     else:
-    #         raise ValueError, 'Unknown objective function.'
-    #
-    #     # initial_u_param_ = self.unaryParameters * 0
-    #     # initial_lbl_param_ = self.labelCompatibilityParameters # * 0
-    #     # initial_knl_param_ = self.kernelParameters # * 0
-    #     #
-    #     # # du = eigen.c_vectorXf(initial_u_param_)
-    #     # dl = eigen.c_vectorXf(initial_lbl_param_)
-    #     # dk = eigen.c_vectorXf(initial_knl_param_)
-    #
-    #     dl = self._this.labelCompatibilityParameters() # * 0
-    #     dk = self._this.kernelParameters()
-    #
-    #     grad_val = self._this.gradient(niter, objective.thisptr[0], NULL, &dl,
-    #                                 &dk)
-
     property unaryParameters:
         def __get__(self):
-#             c_VectorXf unaryParameters() const;
             return eigen.VectorXf().wrap(self._this.unaryParameters())
     
         def __set__(self, float[::1] value not None):
-#             void setUnaryParameters( const c_VectorXf & v )
             self._this.setUnaryParameters(eigen.c_vectorXf(value))
 
     property labelCompatibilityParameters:
         def __get__(self):
-#             c_VectorXf labelCompatibilityParameters() const
             return eigen.VectorXf().wrap(self._this.labelCompatibilityParameters())
     
         def __set__(self, float[::1] value not None):
-#             void setLabelCompatibilityParameters( const c_VectorXf & v )
             self._this.setLabelCompatibilityParameters(eigen.c_vectorXf(value))
     
     property kernelParameters:
         def __get__(self):
-#             c_VectorXf kernelParameters() const
             return eigen.VectorXf().wrap(self._this.kernelParameters())
     
         def __set__(self, float[::1] value not None):
-#             void setKernelParameters( const c_VectorXf & v )
             self._this.setKernelParameters(eigen.c_vectorXf(value))
 
 cdef class DenseCRF2D(DenseCRF):

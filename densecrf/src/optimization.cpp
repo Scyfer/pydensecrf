@@ -75,7 +75,6 @@ double CRFEnergy::gradient( const VectorXf & x, VectorXf & dx ) {
 }
 
 
-
 static lbfgsfloatval_t evaluate(
     void *instance,
     const lbfgsfloatval_t *x,

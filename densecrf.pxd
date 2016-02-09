@@ -52,20 +52,22 @@ cdef extern from "densecrf/include/objective.h":
 
     cdef cppclass LogLikelihood(ObjectiveFunction):
         LogLikelihood(const c_VectorXs & gt, float robust ) except +
+        double evaluate( c_MatrixXf & d_mul_Q, const c_MatrixXf & Q ) const
 
     cdef cppclass Hamming(ObjectiveFunction):
         Hamming(const c_VectorXs & gt, float class_weight_pow ) except +
         # Hamming(const c_VectorXs & gt, const c_VectorXf & class_weight ) \
         #         except +
+        double evaluate( c_MatrixXf & d_mul_Q, const c_MatrixXf & Q ) const
 
     cdef cppclass IntersectionOverUnion(ObjectiveFunction):
         IntersectionOverUnion(const c_VectorXs & gt ) except +
+        double evaluate( c_MatrixXf & d_mul_Q, const c_MatrixXf & Q ) const
 
 
 cdef class Objective:
     cdef ObjectiveFunction *thisptr
     cdef ObjectiveFunction* move(self)
-
 
 cdef class LogLikObjective(Objective):
     pass
@@ -77,18 +79,6 @@ cdef class HammingObjective(Objective):
 
 cdef class IoUObjective(Objective):
     pass
-
-
-# cdef class LogLikelihoodObjective:
-#     cdef LogLikelihood *thisptr
-#
-#
-# cdef class HammingObjective:
-#     cdef Hamming *thisptr
-#
-#
-# cdef class IntersectionOverUnionObjective:
-#     cdef IntersectionOverUnion *thisptr
 
 
 cdef extern from "densecrf/include/optimization.h":
