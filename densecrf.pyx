@@ -80,11 +80,12 @@ cdef class IoUObjective(Objective):
 
 cdef class CRFEnergy:
     def __cinit__(self, DenseCRF dc, Objective objective, int niter,
-                  bint pairwise=True, bint kernel=True):
+                  bint unary=False, bint pairwise=True, bint kernel=True):
 
         if type(self) is CRFEnergy:
             self.thisptr = new c_CRFEnergy(dc._this[0], objective.thisptr[0],
-                                           niter, 0, int(pairwise), int(kernel))
+                                           niter, int(unary), int(pairwise),
+                                           int(kernel))
         else:
             self.thisptr = NULL
 
