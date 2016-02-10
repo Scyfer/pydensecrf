@@ -68,7 +68,7 @@ cdef extern from "densecrf/include/objective.h":
 cdef class Objective:
     cdef ObjectiveFunction *thisptr
     cdef ObjectiveFunction* move(self)
-    #cdef void* evaluate(self, float[:, ::1] Q )
+    #cdef double evaluate(self, float[:, ::1] Q )
 
 cdef class LogLikObjective(Objective):
     pass

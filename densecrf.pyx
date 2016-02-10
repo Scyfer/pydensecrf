@@ -83,24 +83,18 @@ cdef class CRFEnergy:
                   bint unary=False, bint pairwise=True, bint kernel=True):
 
         if type(self) is CRFEnergy:
-            self.thisptr = new c_CRFEnergy(dc._this[0], objective.thisptr[0],
-                                           niter, int(unary), int(pairwise),
-                                           int(kernel))
+            self.thisptr = new c_CRFEnergy(dc._this[0], objective.move()[0],
+                                           niter, 0, int(pairwise), int(kernel))
         else:
             self.thisptr = NULL
 
-        
     def __dealloc__(self):
         if self.thisptr:
             del self.thisptr
 
     def compute_gradient(self, float[::1] params):
         return eigen.VectorXf().wrap(self.thisptr.sgd_gradient(
-            eigen.c_vectorXf(params)))
-
-    def __dealloc__(self):
-        if self.thisptr:
-            del self.thisptr
+                                                    eigen.c_vectorXf(params)))
 
     def setL2Norm(self, float norm):
         self.thisptr.setL2Norm(norm)
